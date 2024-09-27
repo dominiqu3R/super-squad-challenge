@@ -7,7 +7,7 @@ const app = express();
 
 // Define paths
 const clientPath = path.join(__dirname, '..', 'client/src');
-const dataPath = path.join(__dirname, 'data', 'users.json');
+const dataPath = path.join(__dirname, 'data', 'heroes.json');
 const serverPublic = path.join(__dirname, 'public');
 // Middleware setup
 app.use(express.static(clientPath)); // Serve static files from client directory
@@ -21,18 +21,18 @@ app.get('/', (req, res) => {
     res.sendFile('index.html', { root: clientPath });
 });
 
-app.get('/users', async (req, res) => {
+app.get('/heroes', async (req, res) => {
     try {
         const data = await fs.readFile(dataPath, 'utf8');
 
-        const users = JSON.parse(data);
-        if (!users) {
-            throw new Error("Error no users available");
+        const heroes = JSON.parse(data);
+        if (!heroes) {
+            throw new Error("Error no heries available");
         }
-        res.status(200).json(users);
+        res.status(200).json(heroes);
     } catch (error) {
-        console.error("Problem getting users" + error.message);
-        res.status(500).json({ error: "Problem reading users" });
+        console.error("Problem getting heroes" + error.universe);
+        res.status(500).json({ error: "Problem reading heroes" });
     }
 });
 
@@ -44,30 +44,30 @@ app.get('/form', (req, res) => {
 // Form submission route
 app.post('/submit-form', async (req, res) => {
     try {
-        const { name, email, message } = req.body;
+        const { name, powers, universe } = req.body;
 
-        // Read existing users from file
-        let users = [];
+        // Read existing heroes from file
+        let heroes = [];
         try {
             const data = await fs.readFile(dataPath, 'utf8');
-            users = JSON.parse(data);
+            heroes = JSON.parse(data);
         } catch (error) {
             // If file doesn't exist or is empty, start with an empty array
-            console.error('Error reading user data:', error);
-            users = [];
+            console.error('Error reading hero data:', error);
+            heroes = [];
         }
 
-        // Find or create user
-        let user = users.find(u => u.name === name && u.email === email);
-        if (user) {
-            user.messages.push(message);
+        // Find or create hero
+        let hero = heroes.find(h => h.name === name && h.powers === powers);
+        if (hero) {
+            hero.universe.push(universe);
         } else {
-            user = { name, email, messages: [message] };
-            users.push(user);
+            hero = { name, powers, universe: [universe] };
+            heroes.push(hero);
         }
 
-        // Save updated users
-        await fs.writeFile(dataPath, JSON.stringify(users, null, 2));
+        // Save updated heroes
+        await fs.writeFile(dataPath, JSON.stringify(heroes, null, 2));
         res.redirect('/form');
     } catch (error) {
         console.error('Error processing form:', error);
@@ -75,30 +75,30 @@ app.post('/submit-form', async (req, res) => {
     }
 });
 
-// Update user route (currently just logs and sends a response)
-app.put('/update-user/:currentName/:currentEmail', async (req, res) => {
+// Update hero route (currently just logs and sends a response)
+app.put('/update-hero/:currentName/:currentPowers', async (req, res) => {
     try {
-        const { currentName, currentEmail } = req.params;
-        const { newName, newEmail } = req.body;
-        console.log('Current user:', { currentName, currentEmail });
-        console.log('New user data:', { newName, newEmail });
+        const { currentName, currentPowers } = req.params;
+        const { newName, newPowers } = req.body;
+        console.log('Current hero:', { currentName, currentPowers });
+        console.log('New hero data:', { newName, newPowers });
         const data = await fs.readFile(dataPath, 'utf8');
         if (data) {
-            let users = JSON.parse(data);
-            const userIndex = users.findIndex(user => user.name === currentName && user.email === currentEmail);
-            console.log(userIndex);
-            if (userIndex === -1) {
-                return res.status(404).json({ message: "User not found" })
+            let heroes = JSON.parse(data);
+            const heroIndex = heroes.findIndex(hero => hero.name === currentName && hero.powers === currentPowers);
+            console.log(heroIndex);
+            if (heroIndex === -1) {
+                return res.status(404).json({ universe: "hero not found" })
             }
-            users[userIndex] = { ...users[userIndex], name: newName, email: newEmail };
-            console.log(users);
-            await fs.writeFile(dataPath, JSON.stringify(users, null, 2));
+            heroes[heroIndex] = { ...heroes[heroIndex], name: newName, powers: newPowers };
+            console.log(heroes);
+            await fs.writeFile(dataPath, JSON.stringify(heroes, null, 2));
 
-            res.status(200).json({ message: `You sent ${newName} and ${newEmail}` });
+            res.status(200).json({ universe: `You sent ${newName} and ${newPowers}` });
         }
     } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).send('An error occurred while updating the user.');
+        console.error('Error updating hero:', error);
+        res.status(500).send('An error occurred while updating the hero.');
     }
 });
 

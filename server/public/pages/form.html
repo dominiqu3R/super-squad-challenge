@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hero Form</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div id="wrapper">
+    <div id="form1">
+    <h1>Hero Form</h1>
+    <form action="/submit-form" method="POST">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required /><br /><br />
+      <label for="powers">Power(s):</label>
+      <input type="text" id="powers" name="powers" required /><br /><br />
+      <label for="universe">Universe:</label><br />
+      <textarea
+        id="universe"
+        name="universe"
+        rows="4"
+        cols="40"
+        required
+      ></textarea
+      ><br /><br />
+      <input type="submit" value="Submit" class="button"/>
+    </form>
+    </div>
+    <div id="form2">
+    <h1>Hero Management</h1>
+    <h2>Update Hero</h2>
+    <form id="updateForm">
+      <label for="currentName">Current name:</label>
+      <input type="text" id="currentName" required /><br /><br />
+      <label for="currentPowers">Current power(s):</label>
+      <input type="text" id="currentPowers" required /><br /><br />
+      <label for="newName">New name:</label>
+      <input type="text" id="newName" required /><br /><br />
+      <label for="newPowers">New power(s):</label>
+      <input type="text" id="newPowers" required /><br /><br />
+      <button type="submit" class="button">Update Hero</button>
+    </form>
+  
+    
+    <h2>Delete Hero</h2>
+    <form id="deleteForm">
+      <label for="currentName">Current name:</label>
+      <input type="text" id="currentName" required /><br /><br />
+      <label for="currentPowers">Current power(s):</label>
+      <input type="text" id="currentPowers" required /><br /><br />
+      <button type="submit" class="button">Delete Hero</button>
+    </form>
+
+    <div id="hero-table">
+    <h1>Show Heroes</h1>
+    <table id="heroTable">
+      <thead>
+        <tr>
+          <th>Hero Name</th>
+          <th>Hero's Power(s)</th>
+        </tr>
+      </thead>
+      <tbody id="heroTableBody">
+        <!-- data of users will be rendered here -->
+      </tbody>
+    </table>
+    </div>
+    </div>
+    <script>
+      document
+        .getElementById("updateForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const currentName = document.getElementById("currentName").value;
+          const currentPowers = document.getElementById("currentPowers").value;
+          const newName = document.getElementById("newName").value;
+          const newPowers = document.getElementById("newPowers").value;
+          try {
+            const response = await fetch(
+              `/update-hero/${currentName}/${currentPowers}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ newName, newPowers }),
+              }
+            );
+            const data = await response.json();
+            console.log(data);
+            renderHeroes();
+            // alert("Message is: " + data.message);
+          } catch (error) {
+            alert("Error updating user: " + error.message);
+          }
+        });
+      async function fetchUsers() {
+        try {
+          const response = await fetch("/heroes");
+          if (!response.ok) {
+            throw new Error("Error fetching heroes. Response not ok");
+          }
+          // there could be an error getting response/fetching the endpoint
+          console.log(response);
+          const heroes = await response.json();
+          // there could be an error parsing the response
+          // console.log(users);
+          return heroes;
+        } catch (error) {
+          console.error("There was a problem");
+          console.error(error);
+        }
+      }
+
+      async function renderHeroes() {
+        const tableBody = document.getElementById("heroTableBody");
+        tableBody.innerHTML = "";
+        try {
+          const heroes = await fetchHeroes();
+          if (Array.isArray(heroes) && heroes.length > 0) {
+            heroes.forEach((user) => {
+              const row = `<tr><td>${user.name}</td><td>${user.powers}</td></tr>`;
+              tableBody.innerHTML += row;
+            });
+          }
+        } catch (error) {}
+      }
+      document.addEventListener("DOMContentLoaded", renderHeroes);
+    </script>
+  </body>
+</html>
