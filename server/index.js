@@ -7,7 +7,7 @@ const app = express();
 
 // Define paths
 const clientPath = path.join(__dirname, '..', 'client/src');
-const dataPath = path.join(__dirname, 'data', 'heroes.json');
+const dataPath = path.join(__dirname, 'data', 'users.json');
 const serverPublic = path.join(__dirname, 'public');
 // Middleware setup
 app.use(express.static(clientPath)); // Serve static files from client directory
@@ -101,6 +101,39 @@ app.put('/update-hero/:currentName/:currentPowers', async (req, res) => {
         res.status(500).send('An error occurred while updating the hero.');
     }
 });
+
+app.delete('/hero/:name/:powers', async (req, res) => {
+    try {
+        // console.log(req.params);
+        // console.log(req.params.name);
+        // console.log(req.params.email);
+        const { name, powers } = req.params;
+        let heroes = [];
+        try {
+            const data = await fs.readFile(dataPath, 'utf8');
+            heroes = JSON.parse(data);
+        } catch (error) {
+            return res.status(404).send('Hero data not found');
+        }
+        const heroIndex = heroes.findIndex(hero => hero.name === name && hero.powers === powers);
+        console.log(heroIndex);
+        if (heroIndex === -1) {
+            return res.status(404).send('Hero not found')
+        }
+
+        heroes.splice(heroIndex, 1);
+
+        try {
+            await fs.writeFile(data, JSON.stringify(heroes, null, 2));
+        } catch (error) {
+            console.error('Failed to write to database')
+        }
+        res.send('Hero deleted successfully');
+
+    } catch (error) {
+        res.status(500).send('There was an error deleting hero')
+    }
+})
 
 // Start the server
 const PORT = process.env.PORT || 3000;

@@ -45,10 +45,10 @@
     
     <h2>Delete Hero</h2>
     <form id="deleteForm">
-      <label for="currentName">Current name:</label>
-      <input type="text" id="currentName" required /><br /><br />
-      <label for="currentPowers">Current power(s):</label>
-      <input type="text" id="currentPowers" required /><br /><br />
+      <label for="delete-name">Current name:</label>
+      <input type="text" id="delete-name" required /><br /><br />
+      <label for="delete-powers">Current power(s):</label>
+      <input type="text" id="delete-powers" required /><br /><br />
       <button type="submit" class="button">Delete Hero</button>
     </form>
 
@@ -92,10 +92,31 @@
             renderHeroes();
             // alert("Message is: " + data.message);
           } catch (error) {
-            alert("Error updating user: " + error.message);
+            alert("Error updating hero: " + error.message);
           }
         });
-      async function fetchUsers() {
+
+        document.getElementById('delete-hero').addEventListene('submit', async(e) => {
+            e.preventDefault();
+            const name = document.getElementById('delete-name').value;
+            const powers = document.getElementById('delete-powers').value;
+            try {
+              const response = await fetch(`/hero/${name}/${powers}`, {
+                method: "DELETE",
+              });
+              if (!response.ok) {
+                throw new Error('error with network')
+              }
+              const data = await response.text();
+              console.log(data);
+              renderHeores();
+
+            } catch (error) {
+              console.error('somethhing went wrong ' + error.message)
+            }
+          });
+
+      async function fetchHeores() {
         try {
           const response = await fetch("/heroes");
           if (!response.ok) {
@@ -119,8 +140,8 @@
         try {
           const heroes = await fetchHeroes();
           if (Array.isArray(heroes) && heroes.length > 0) {
-            heroes.forEach((user) => {
-              const row = `<tr><td>${user.name}</td><td>${user.powers}</td></tr>`;
+            heroes.forEach((hero) => {
+              const row = `<tr><td>${hero.name}</td><td>${hero.powers}</td></tr>`;
               tableBody.innerHTML += row;
             });
           }
